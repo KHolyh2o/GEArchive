@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서원대학교 미디어콘텐츠학부 졸업전시 아카이브</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #0f172a;
+            --accent: #3b82f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f172a;
+                --text-color: #f8fafc;
+                --accent: #60a5fa;
+            }
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 5rem 2rem;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 5rem;
+            animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0 0 1rem 0;
+            letter-spacing: -0.03em;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .card {
+            position: relative;
+            border-radius: 12px;
+            /* 코너 둥글기 살짝 줄임 (포스터 모서리 잘림 방지) */
+            overflow: hidden;
+            /* aspect-ratio: 1 / 1.414; 제거하여 이미지 원본 비율에 맞게 늘어나도록 변경 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background-color: #222;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .card-thumbnail-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .card-thumbnail-fallback {
+            width: 100%;
+            aspect-ratio: 1 / 1.414;
+            flex: 1;
+            /* 그리드 높이가 늘어날 때 빈 공간을 꽉 채우도록 설정 */
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .card:hover .card-thumbnail-img,
+        .card:hover .card-thumbnail-fallback {
+            transform: scale(1.05);
+        }
+
+        .card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .card-main-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-year {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #93c5fd;
+            margin-bottom: 0.5rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s 0.1s ease;
+        }
+
+        .card-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s 0.2s ease;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            margin-top: 1rem;
+            margin-bottom: 0;
+            font-weight: 300;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s 0.3s ease;
+        }
+
+        .card:hover .card-year,
+        .card:hover .card-title,
+        .card:hover .card-desc {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.2rem;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s 0.4s ease, background-color 0.2s;
+        }
+
+        .card:hover .btn-download {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .btn-download:hover {
+            background-color: #2563eb;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            padding-bottom: 2rem;
+            opacity: 0;
+            animation: fadeIn 1s 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .card-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>졸업전시 아카이브</h1>
+            <p>Archive of Seowon University, Dept. of Media Contents</p>
+        </header>
+
+        <!-- 자바스크립트로 카드가 렌더링될 영역 -->
+        <div class="grid" id="archive-grid"></div>
+    </div>
+
+    <footer class="footer">
+        <p>All rights reserved © 서원대학교 미디어콘텐츠학부</p>
+    </footer>
+
+    <!-- 분리된 데이터 파일 로드 -->
+    <script src="data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('archive-grid');
+
+            archives.forEach((item, index) => {
+                const article = document.createElement('article');
+                article.className = 'card';
+                article.style.animationDelay = `${(index + 1) * 0.1}s`;
+
+                // 포스터 이미지가 있으면 실제 원본 비율대로 그려지는 img 태그 사용
+                // 없으면 기존처럼 그라데이션 빈 공간(fallback) 사용
+                const thumbnailHTML = item.poster
+                    ? `<img src="${item.poster}" class="card-thumbnail-img" alt="${item.title} 포스터">`
+                    : `<div class="card-thumbnail-fallback" style="background: ${item.placeholderGradient};"></div>`;
+
+                article.innerHTML = `
+                    ${thumbnailHTML}
+                    <div class="card-overlay">
+                        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="card-main-link">
+                            <span class="card-year">${item.year}</span>
+                            <h2 class="card-title">${item.title}</h2>
+                            <p class="card-desc">${item.desc}</p>
+                        </a>
+                        <a href="${item.catalog}" class="btn-download" target="_blank" download>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            도록 다운로드
+                        </a>
+                    </div>
+                `;
+
+                grid.appendChild(article);
+            });
+        });
+    </script>
+</body>
+
+</html>

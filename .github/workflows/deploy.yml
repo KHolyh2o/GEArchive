@@ -1,0 +1,55 @@
+name: Deploy Archive Site to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Transfer files via SSH
+        run: |
+          # 필요한 파일들만 임시 dist 폴더로 복사하여 압축
+          mkdir -p dist
+          cp index.html dist/
+          cp data.js dist/
+          cp -r assets dist/ 2>/dev/null || true # assets 폴더가 비어있어도 에러 안 나게 처리
+
+          # dist 폴더 내부의 파일들만 압축
+          cd dist && tar -czf ../archive_site.tar.gz .
+          cd ..
+          sudo apt-get install -y sshpass
+
+          # 서버로 파일 전송 (임시 폴더로 이동)
+          cat archive_site.tar.gz | sshpass -p "${{ secrets.PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_PORT }} ${{ secrets.USERNAME }}@${{ secrets.SERVER_HOST }} 'cat > /tmp/archive_site.tar.gz'
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            # 배포할 대상 폴더 (archive)
+            # 만약 최상위 도메인(루트)로 접속하게 하려면 TARGET_DIR="/var/www/html" 로 변경하세요
+            TARGET_DIR="/var/www/html/archive"
+
+            echo "${{ secrets.PASSWORD }}" | sudo -S mkdir -p $TARGET_DIR
+            
+            # 압축 해제 (해당 폴더에 덮어쓰기)
+            echo "${{ secrets.PASSWORD }}" | sudo -S tar -xzf /tmp/archive_site.tar.gz -C $TARGET_DIR
+            
+            # 전송된 임시 압축 파일 삭제
+            echo "${{ secrets.PASSWORD }}" | sudo -S rm -f /tmp/archive_site.tar.gz
+
+            # nginx 설정 테스트 후 재시작 (졸전 사이트와 동일하게 적용)
+            echo "${{ secrets.PASSWORD }}" | sudo -S nginx -t
+            echo "${{ secrets.PASSWORD }}" | sudo -S systemctl restart nginx
+            echo "${{ secrets.PASSWORD }}" | sudo -S systemctl status nginx --no-pager | head -5
