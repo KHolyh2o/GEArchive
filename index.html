@@ -179,7 +179,30 @@
             aspect-ratio: 1 / 1.414;
             flex: 1;
             /* 그리드 높이가 늘어날 때 빈 공간을 꽉 채우도록 설정 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
             transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fallback-year {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            opacity: 0.85;
+        }
+
+        .fallback-title {
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            word-break: keep-all;
         }
 
         .card-overlay {
@@ -422,7 +445,7 @@
                 // 없으면 기존처럼 그라데이션 빈 공간(fallback) 사용
                 const thumbnailHTML = item.poster
                     ? `<img src="${item.poster}" class="card-thumbnail-img" alt="${item.title} 포스터">`
-                    : `<div class="card-thumbnail-fallback" style="background: ${item.placeholderGradient};"></div>`;
+                    : `<div class="card-thumbnail-fallback" style="background: ${item.placeholderGradient};"><span class="fallback-year">${item.year}</span><span class="fallback-title">${item.title}</span></div>`;
 
                 article.innerHTML = `
                     ${thumbnailHTML}
