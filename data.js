@@ -1,3 +1,14 @@
+// 푸터에 표시되는 학과 정보. instagram은 비워두면 푸터에 안 보이니,
+// 계정 주소 생기면 여기에 채워넣으면 됩니다.
+const departmentInfo = {
+    homepage: "https://www.seowon.ac.kr/multimedia/index.do",
+    instagram: "https://www.instagram.com/official.seowonuniv",
+    address: "(우)28674 충북 청주시 서원구 무심서로 377-3(모충동) 서원대학교 제1자연관 302호",
+    tel: "043-299-8590",
+    lastUpdated: "2026.08",
+    nextExhibitionDate: "MM-DD", // 다음 졸업전시 예정일 정해지면 이 값만 바꾸면 됩니다.
+};
+
 const archives = [
     {
         year: "2026",

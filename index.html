@@ -6,21 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>서원대학교 미디어콘텐츠학부 졸업전시 아카이브</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet" />
     <style>
         :root {
-            --bg-color: #f8fafc;
+            --bg-color: #ffffff;
             --text-color: #0f172a;
             --accent: #3b82f6;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #0f172a;
-                --text-color: #f8fafc;
-                --accent: #60a5fa;
-            }
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
         }
 
         body {
@@ -44,10 +43,16 @@
         }
 
         .header {
-            text-align: center;
             margin-bottom: 5rem;
             animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
+        }
+
+        .header-inner {
+            display: grid;
+            grid-template-columns: 1fr 220px;
+            align-items: start;
+            gap: 40px;
         }
 
         @keyframes fadeInDown {
@@ -62,18 +67,56 @@
             }
         }
 
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .header-stats {
+            border-top: 1px solid var(--text-color);
+            margin: 0;
+        }
+
+        .header-stats div {
+            border-bottom: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            padding: 7px 0;
+        }
+
+        .header-stats dt,
+        .header-stats dd {
+            font-family: var(--mono);
+            font-size: 11px;
+            margin: 0;
+        }
+
+        .header-stats dt { color: var(--muted); }
+        .header-stats dd { font-weight: 600; }
+
         .header h1 {
-            font-size: 3rem;
+            font-size: 2rem;
             font-weight: 800;
-            margin: 0 0 1rem 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.03em;
         }
 
         .header p {
-            color: #64748b;
-            font-size: 1.2rem;
-            font-weight: 400;
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
             margin: 0;
+            text-transform: uppercase;
         }
 
         .grid {
@@ -246,12 +289,40 @@
 
         .footer {
             margin-top: 4rem;
+            width: 100%;
+            padding: 1.5rem 2rem 2.5rem;
+            box-sizing: border-box;
+            border-top: 1px solid var(--line);
             text-align: center;
-            color: #94a3b8;
-            font-size: 0.9rem;
-            padding-bottom: 2rem;
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
             opacity: 0;
             animation: fadeIn 1s 1s ease forwards;
+        }
+
+        .footer p { margin: 0; }
+        .footer p + p { margin-top: 4px; }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-links a {
+            color: var(--text-color);
+            font-weight: 600;
+            transition: color 150ms ease;
+        }
+
+        .footer-links a:hover,
+        .footer-links a:focus-visible {
+            color: var(--accent);
         }
 
         @keyframes fadeIn {
@@ -261,8 +332,30 @@
         }
 
         @media (max-width: 768px) {
+            .header-inner {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .header-stats {
+                margin-left: 62px;
+            }
+
+            .brand {
+                gap: 14px;
+            }
+
+            .brand-logo {
+                width: 48px;
+                height: 48px;
+            }
+
             .header h1 {
-                font-size: 2.2rem;
+                font-size: 1.4rem;
+            }
+
+            .header p {
+                font-size: 0.65rem;
             }
 
             .grid {
@@ -279,8 +372,17 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>졸업전시 아카이브</h1>
-            <p>Archive of Seowon University, Dept. of Media Contents</p>
+            <div class="header-inner">
+                <div class="brand">
+                    <img class="brand-logo" src="assets/swmc-logo.png" alt="서원대학교 미디어콘텐츠학부 로고">
+                    <div class="brand-text">
+                        <h1>서원대학교 미디어콘텐츠학부 졸업전시 아카이브</h1>
+                        <p>SWMC Graduation Exhibition Archive</p>
+                    </div>
+                </div>
+
+                <dl class="header-stats" id="header-stats"></dl>
+            </div>
         </header>
 
         <!-- 자바스크립트로 카드가 렌더링될 영역 -->
@@ -288,13 +390,27 @@
     </div>
 
     <footer class="footer">
-        <p>All rights reserved © 서원대학교 미디어콘텐츠학부</p>
+        <div class="footer-links" id="footer-links"></div>
+        <p id="footer-address"></p>
+        <p id="footer-copyright">© 서원대학교 미디어콘텐츠학부</p>
     </footer>
 
     <!-- 분리된 데이터 파일 로드 -->
     <script src="data.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const years = archives.map((item) => Number(item.year));
+            const minYear = Math.min(...years);
+            const maxYear = Math.max(...years);
+            const yearRange = minYear === maxYear ? `${minYear}` : `${minYear}—${maxYear}`;
+            const latest = archives.find((item) => Number(item.year) === maxYear);
+
+            document.getElementById('header-stats').innerHTML = `
+                <div><dt>EXHIBITIONS</dt><dd>${archives.length}</dd></div>
+                <div><dt>LATEST</dt><dd>${latest.year} · ${latest.title}</dd></div>
+                <div><dt>NEXT</dt><dd>${departmentInfo.nextExhibitionDate}</dd></div>
+            `;
+
             const grid = document.getElementById('archive-grid');
 
             archives.forEach((item, index) => {
@@ -316,15 +432,29 @@
                             <h2 class="card-title">${item.title}</h2>
                             <p class="card-desc">${item.desc}</p>
                         </a>
-                        <a href="${item.catalog}" class="btn-download" target="_blank" download>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            도록 다운로드
+                        <a href="${item.catalog}" class="btn-download" target="_blank" rel="noopener noreferrer">
+                            도록 보기
                         </a>
                     </div>
                 `;
 
                 grid.appendChild(article);
             });
+
+            document.getElementById('footer-copyright').textContent = `© ${yearRange} 서원대학교 미디어콘텐츠학부`;
+
+            const footerLinks = document.getElementById('footer-links');
+            const linkItems = [
+                departmentInfo.homepage ? { label: '학과 홈페이지', href: departmentInfo.homepage } : null,
+                departmentInfo.instagram ? { label: 'Instagram', href: departmentInfo.instagram } : null,
+            ].filter(Boolean);
+            footerLinks.innerHTML = linkItems
+                .map((link) => `<a href="${link.href}" target="_blank" rel="noopener noreferrer">${link.label}</a>`)
+                .join('');
+            footerLinks.hidden = linkItems.length === 0;
+
+            const addressParts = [departmentInfo.address, departmentInfo.tel ? `Tel. ${departmentInfo.tel}` : ''].filter(Boolean);
+            document.getElementById('footer-address').textContent = addressParts.join(' · ');
         });
     </script>
 </body>
