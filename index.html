@@ -176,6 +176,7 @@
 
         .card-thumbnail-fallback {
             width: 100%;
+            box-sizing: border-box;
             aspect-ratio: 1 / 1.414;
             flex: 1;
             /* 그리드 높이가 늘어날 때 빈 공간을 꽉 채우도록 설정 */
@@ -203,6 +204,8 @@
             font-weight: 800;
             line-height: 1.2;
             word-break: keep-all;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
 
         .card-overlay {
