@@ -15,6 +15,7 @@
 | SSH_PORT | 22 | 인증에 쓸 SSH 포트 (서버가 8288이면 8288) |
 | SSH_HOST | 127.0.0.1 | |
 | ADMIN_GROUPS | sudo,wheel | 허용 그룹 |
+| PUBLIC_BASE | / | 공개 페이지 경로 (서버에서는 /archive). 관리 화면 포스터 미리보기용 |
 | SITE_ROOT | 상위 폴더 | index.html/data.js/assets 위치 (서버에서는 /var/www/html/archive 등) |
 | COOKIE_SECURE | true | HTTP로 로컬 테스트할 때만 false |
 

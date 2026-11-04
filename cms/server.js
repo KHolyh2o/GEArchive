@@ -19,6 +19,8 @@ const HOST = process.env.HOST || '127.0.0.1';
 const SSH_HOST = process.env.SSH_HOST || '127.0.0.1';
 const SSH_PORT = Number(process.env.SSH_PORT || 22);
 const ADMIN_GROUPS = (process.env.ADMIN_GROUPS || 'sudo,wheel').split(',').map((s) => s.trim());
+// 공개 페이지가 서비스되는 경로 (예: 서버에서는 /archive/). 관리 화면의 포스터 미리보기에 사용
+const PUBLIC_BASE = `/${(process.env.PUBLIC_BASE || '/').replace(/^\/+|\/+$/g, '')}/`.replace('//', '/');
 const COOKIE_SECURE = process.env.COOKIE_SECURE !== 'false';
 const SESSION_MS = 8 * 60 * 60 * 1000;
 
@@ -222,7 +224,7 @@ api.post('/logout', requireAuth, (req, res) => {
 
 api.get('/me', requireAuth, (req, res) => res.json({ user: req.session.user, csrf: req.session.csrf }));
 
-api.get('/site', requireAuth, (_req, res) => res.json(loadSite()));
+api.get('/site', requireAuth, (_req, res) => res.json({ ...loadSite(), publicBase: PUBLIC_BASE }));
 
 api.put('/department', requireAuth, express.json({ limit: '10kb' }), (req, res) => {
   const site = loadSite();

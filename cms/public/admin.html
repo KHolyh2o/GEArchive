@@ -123,6 +123,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let csrf = '';
+let publicBase = '/';
 
 async function api(path, opts = {}) {
   const headers = { 'X-CSRF-Token': csrf, ...(opts.headers || {}) };
@@ -143,13 +144,14 @@ async function enter(user) {
 }
 
 function render(s) {
+  if (s.publicBase) publicBase = s.publicBase;
   const list = $('list');
   list.textContent = '';
   if (!s.archives.length) list.textContent = '등록된 전시가 없습니다.';
   for (const a of s.archives) {
     const row = document.createElement('div'); row.className = 'item';
     const th = document.createElement('div'); th.className = 'thumb';
-    if (a.poster) th.style.backgroundImage = `url("/${encodeURI(a.poster)}?t=${Date.now()}")`;
+    if (a.poster) th.style.backgroundImage = `url("${publicBase}${encodeURI(a.poster)}?t=${Date.now()}")`;
     const info = document.createElement('div'); info.className = 'info';
     const b = document.createElement('b'); b.textContent = `${a.year} · ${a.title}`;
     const sp = document.createElement('span'); sp.textContent = `${a.startDate ? a.startDate + (a.endDate ? ' ~ ' + a.endDate : '') + ' · ' : ''}포스터 ${a.poster ? '있음' : '없음'} · 도록 ${a.catalog ? '있음' : '없음'}`;
