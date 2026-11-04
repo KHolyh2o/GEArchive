@@ -475,7 +475,8 @@
     </footer>
 
     <!-- 분리된 데이터 파일 로드 -->
-    <script src="data.js"></script>
+    <!-- CMS에서 수정한 내용이 바로 보이도록 data.js는 캐시를 피해 불러옵니다 -->
+    <script>document.write('<script src="data.js?t=' + Date.now() + '"><\/script>');</script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const years = archives.map((item) => Number(item.year));
