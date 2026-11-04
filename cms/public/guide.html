@@ -127,29 +127,65 @@
 
     <h3>Windows</h3>
     <ol>
-      <li><b>설치</b> — <a href="https://ghostscript.com/releases/gsdnld.html" target="_blank" rel="noopener">ghostscript.com/releases/gsdnld.html</a>에서 Windows용(64bit)을 받아 설치합니다. 또는 명령 프롬프트에서 아래를 실행해도 됩니다.
+      <li><b>설치 (처음 한 번)</b> — <a href="https://ghostscript.com/releases/gsdnld.html" target="_blank" rel="noopener">ghostscript.com/releases/gsdnld.html</a>에서 Windows용(64bit)을 받아 설치합니다. 또는 명령 프롬프트에서 아래를 실행해도 됩니다.
         <pre><code>winget install ArtifexSoftware.GhostScript</code></pre>
       </li>
-      <li><b>명령 프롬프트 열기</b> — 도록 PDF가 있는 폴더를 연 상태에서 주소창에 <code>cmd</code>를 입력하고 Enter를 누르면 그 폴더에서 열립니다. <b>PowerShell이 아니라 명령 프롬프트(cmd)</b>로 하세요. PowerShell은 옵션을 잘못 해석할 수 있습니다.</li>
-      <li><b>실행</b> — 아래 한 줄을 그대로 붙여넣습니다. 파일 이름이 <code>도록.pdf</code>가 아니면 마지막 이름만 바꿉니다.
+      <li><b>도록 PDF가 있는 폴더에서 명령 프롬프트 열기</b> — 아래 두 방법 중 편한 것을 고르세요.
+        <p><b>방법 A. 탐색기에서 바로 열기 (가장 쉬움)</b></p>
+        <ol>
+          <li>파일 탐색기에서 도록 PDF가 들어 있는 폴더를 엽니다.</li>
+          <li>창 맨 위의 <b>주소창</b>(폴더 경로가 적힌 곳)의 빈 곳을 한 번 클릭합니다. 경로가 파랗게 선택됩니다.</li>
+          <li>그 상태에서 글자를 모두 지우고 <code>cmd</code>라고 입력한 뒤 Enter를 누릅니다.</li>
+          <li>까만 창이 열리고, 줄 맨 앞에 <code>C:\...\폴더이름&gt;</code>처럼 그 폴더 경로가 보이면 성공입니다.</li>
+        </ol>
+        <p><b>방법 B. 이미 열려 있는 PowerShell/명령 프롬프트에서 이동하기</b></p>
+        <ol>
+          <li>탐색기에서 도록 폴더를 열고 주소창을 클릭한 뒤 <b>Ctrl+C</b>로 경로를 복사합니다.</li>
+          <li>까만 창에 <code>cd /d "</code>까지 입력하고(<code>cd</code> 뒤에 띄어쓰기, <code>/d</code>, 띄어쓰기, 따옴표) 마우스 <b>오른쪽 버튼</b>(또는 Ctrl+V)으로 경로를 붙여넣은 뒤 따옴표를 닫고 Enter를 누릅니다.
+<pre><code>cd /d "D:\2026 졸업전시\도록"</code></pre>
+          </li>
+          <li><code>/d</code>는 다른 드라이브(C: → D: 등)로도 이동하게 해 주는 옵션입니다. 경로에 띄어쓰기나 한글이 있어도 따옴표로 감싸면 됩니다.</li>
+          <li>PowerShell(줄 앞에 <code>PS</code>가 붙어 있음)을 쓰고 있다면 이동한 뒤 <code>cmd</code>를 입력하고 Enter를 누르세요. 줄 앞의 <code>PS</code>가 사라지면 명령 프롬프트로 바뀐 것입니다.</li>
+        </ol>
+        <p><b>제대로 왔는지 확인</b> — 아래를 입력해서 <code>도록.pdf</code>가 목록에 보이면 맞는 폴더입니다. 안 보이면 폴더를 잘못 온 것이니 위 과정을 다시 하세요.</p>
+<pre><code>dir *.pdf</code></pre>
+      </li>
+      <li><b>실행</b> — 아래 한 줄을 그대로 붙여넣고 Enter를 누릅니다. 파일 이름이 <code>도록.pdf</code>가 아니면 마지막 이름만 바꿉니다. 끝날 때까지 수십 초 걸리며, 아무 글자도 안 나오다가 줄이 다시 나타나면 끝난 것입니다.
 <pre><code>gswin64c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
       </li>
-      <li><code>도록_압축.pdf</code>가 만들어지면 열어서 글자와 사진이 괜찮은지 확인한 뒤, 관리 화면의 <b>도록 (PDF)</b>에 올립니다.</li>
+      <li><b>확인</b> — <code>dir *.pdf</code>를 다시 입력해 <code>도록_압축.pdf</code>가 생겼는지, 용량이 크게 줄었는지 봅니다. 파일을 열어서 글자와 사진이 괜찮은지 확인한 뒤, 관리 화면의 <b>도록 (PDF)</b>에 올립니다.</li>
     </ol>
     <p><b>"'gswin64c'은(는) 내부 또는 외부 명령...이 아닙니다"</b>라고 나오면 설치 경로가 등록되지 않은 것입니다. <code>gswin64c</code> 대신 전체 경로를 쓰세요. 버전 숫자는 <code>C:\Program Files\gs</code> 폴더 안에서 확인합니다.</p>
 <pre><code>"C:\Program Files\gs\gs10.08.0\bin\gswin64c.exe" -q -dNOPAUSE ... (나머지는 위와 동일)</code></pre>
 
     <h3>맥</h3>
     <ol>
-      <li><b>설치</b> (처음 한 번) — 터미널에서 실행합니다.
+      <li><b>설치 (처음 한 번)</b> — <b>터미널</b> 앱(Spotlight ⌘+Space → "터미널")을 열고 실행합니다.
         <pre><code>brew install ghostscript</code></pre>
       </li>
-      <li><b>실행</b> — 도록 PDF가 있는 폴더에서 아래를 실행합니다.
+      <li><b>도록 PDF가 있는 폴더로 이동하기</b> — 아래 두 방법 중 편한 것을 고르세요.
+        <p><b>방법 A. 폴더를 끌어다 놓기 (가장 쉬움)</b></p>
+        <ol>
+          <li>터미널에 <code>cd</code>와 <b>띄어쓰기 한 칸</b>만 입력합니다. (아직 Enter는 누르지 않습니다.)</li>
+          <li>Finder에서 도록 PDF가 들어 있는 <b>폴더</b>를 마우스로 끌어서 터미널 창 위에 놓습니다. 폴더 경로가 자동으로 입력됩니다.</li>
+          <li>Enter를 누릅니다.</li>
+        </ol>
+        <p><b>방법 B. 경로를 직접 입력하기</b></p>
+        <ol>
+          <li>다운로드 폴더에 있다면 아래처럼 입력합니다. <code>cd</code>는 "폴더 이동"이고 <code>~</code>는 내 홈 폴더입니다.
+<pre><code>cd ~/Downloads</code></pre>
+          </li>
+          <li>그 안의 다른 폴더로 들어가려면 이름을 이어서 씁니다. (예: <code>cd ~/Downloads/도록</code>) 폴더 이름에 <b>띄어쓰기가 있으면 방법 A가 안전합니다.</b></li>
+        </ol>
+        <p><b>제대로 왔는지 확인</b> — 아래를 입력해서 <code>도록.pdf</code>가 목록에 보이면 맞는 폴더입니다.</p>
+<pre><code>ls *.pdf</code></pre>
+      </li>
+      <li><b>실행</b> — 아래를 붙여넣고 Enter를 누릅니다. 끝날 때까지 수십 초 걸리며, 아무 글자도 안 나오다가 줄이 다시 나타나면 끝난 것입니다.
 <pre><code>gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 \
   -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged \
   -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
       </li>
-      <li><code>도록_압축.pdf</code>를 열어 확인한 뒤 관리 화면에 올립니다.</li>
+      <li><b>확인</b> — <code>ls -lh *.pdf</code>로 <code>도록_압축.pdf</code>가 생겼고 용량이 크게 줄었는지 봅니다. 파일을 열어 글자와 사진을 확인한 뒤 관리 화면에 올립니다.</li>
     </ol>
 
     <h3>방법 2. 인디자인에서 처음부터 작게 내보내기</h3>
