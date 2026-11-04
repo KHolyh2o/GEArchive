@@ -112,7 +112,7 @@
     <h2>파일 규격</h2>
     <table>
       <tr><th>포스터</th><td>PNG, JPG, WEBP 이미지. 세로형(예: A1·A2 비율)을 권장합니다. 원본 비율 그대로 카드에 표시됩니다.</td></tr>
-      <tr><th>도록</th><td>PDF 파일만 가능합니다. 최대 300MB(100MB 이하 권장). 용량이 크면 <a href="#shrink">줄이는 방법</a>을 보세요.</td></tr>
+      <tr><th>도록</th><td>PDF 파일만 가능합니다. 최대 300MB(150MB 안팎 권장). 용량이 크면 <a href="#shrink">줄이는 방법</a>을 보세요.</td></tr>
       <tr><th>저장되는 이름</th><td>자동으로 <code>2027_poster.png</code>, <code>2027_catalog.pdf</code> 처럼 연도별로 정리됩니다. 파일 이름은 신경 쓰지 않아도 됩니다.</td></tr>
     </table>
     <div class="note"><b>주의</b> 파일의 실제 내용으로 종류를 확인합니다. 이름만 .pdf로 바꾼 다른 파일은 거부됩니다.</div>
@@ -120,7 +120,7 @@
 
   <section id="shrink">
     <h2>도록 PDF가 너무 클 때 (용량 줄이기)</h2>
-    <p>인디자인에서 그대로 내보낸 도록은 수백 MB가 되기 쉽습니다. 2026 도록은 <b>737MB → 약 54MB</b>(171쪽, 약 25초)로 줄였고, 화면에서 읽는 데 문제가 없었습니다. 업로드 한도는 300MB지만, 방문자가 내려받는 것을 생각하면 <b>100MB 이하</b>를 권장합니다.</p>
+    <p>인디자인에서 그대로 내보낸 도록은 수백 MB가 되기 쉽습니다. 2026 도록은 <b>약 773MB → 약 141MB</b>(171쪽, 약 30초)로 줄였고, 화면에서 원본과 거의 구분되지 않았습니다. 업로드 한도는 300MB이고, 방문자가 내려받는 것을 생각하면 <b>150MB 안팎</b>을 권장합니다.</p>
 
     <h3>방법 1. 무료 도구(Ghostscript)로 줄이기 (추천)</h3>
     <p>원본은 그대로 두고, 같은 폴더에 <code>도록_압축.pdf</code>를 새로 만듭니다. 처음 한 번만 설치하면 다음부터는 3번만 하면 됩니다.</p>
@@ -151,7 +151,7 @@
 <pre><code>dir *.pdf</code></pre>
       </li>
       <li><b>실행</b> — 아래 한 줄을 그대로 붙여넣고 Enter를 누릅니다. 파일 이름이 <code>도록.pdf</code>가 아니면 마지막 이름만 바꿉니다. 끝날 때까지 수십 초 걸리며, 아무 글자도 안 나오다가 줄이 다시 나타나면 끝난 것입니다.
-<pre><code>gswin64c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
+<pre><code>gswin64c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged -dDetectDuplicateImages=true -dDownsampleColorImages=true -dColorImageDownsampleType=/Bicubic -dColorImageDownsampleThreshold=1.0 -dColorImageResolution=275 -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0 -dGrayImageResolution=275 -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
       </li>
       <li><b>확인</b> — <code>dir *.pdf</code>를 다시 입력해 <code>도록_압축.pdf</code>가 생겼는지, 용량이 크게 줄었는지 봅니다. 파일을 열어서 글자와 사진이 괜찮은지 확인한 뒤, 관리 화면의 <b>도록 (PDF)</b>에 올립니다.</li>
     </ol>
@@ -183,7 +183,12 @@
       <li><b>실행</b> — 아래를 붙여넣고 Enter를 누릅니다. 끝날 때까지 수십 초 걸리며, 아무 글자도 안 나오다가 줄이 다시 나타나면 끝난 것입니다.
 <pre><code>gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 \
   -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged \
-  -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
+  -dDetectDuplicateImages=true \
+  -dDownsampleColorImages=true -dColorImageDownsampleType=/Bicubic \
+  -dColorImageDownsampleThreshold=1.0 -dColorImageResolution=275 \
+  -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0 \
+  -dGrayImageResolution=275 \
+  -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
       </li>
       <li><b>확인</b> — <code>ls -lh *.pdf</code>로 <code>도록_압축.pdf</code>가 생겼고 용량이 크게 줄었는지 봅니다. 파일을 열어 글자와 사진을 확인한 뒤 관리 화면에 올립니다.</li>
     </ol>
@@ -192,7 +197,7 @@
     <p>내보내기 → Adobe PDF에서 프리셋을 <b>최소 파일 크기</b>로 고르면 비슷하게 줄어듭니다.</p>
 
     <div class="note"><b>주의</b> <code>-dColorConversionStrategy=/LeaveColorUnchanged</code> 옵션을 빼면 투명 효과가 많은 인디자인 PDF에서 오류가 나고 <b>빈 파일</b>이 만들어질 수 있습니다. 압축 후에는 용량(수 KB면 실패)과 쪽수를 꼭 확인하세요.</div>
-    <div class="note"><b>화질</b> 화면용(150dpi)이라 인쇄용으로는 부족합니다. 인쇄용 원본은 따로 보관하고, 웹에는 압축본만 올리세요. 글자가 이미지로 들어간 쪽은 크게 확대하면 조금 거칠어 보일 수 있습니다.</div>
+    <div class="note"><b>화질과 용량</b> 숫자 <code>275</code>가 사진·이미지의 해상도(dpi)입니다. 클수록 선명하고 용량이 커집니다. 글자가 이미지로 들어간 쪽이 흐리게 보이면 <code>275</code>를 <code>300</code>으로, 용량이 너무 크면 <code>225</code>로 바꿔 보세요. (2026 도록 기준: 225 → 약 103MB, 275 → 약 141MB) 인쇄용 원본은 따로 보관하고, 웹에는 압축본만 올리세요.</div>
   </section>
 
   <section id="dept">
