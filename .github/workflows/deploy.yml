@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,19 +19,28 @@ jobs:
 
       - name: Transfer files via SSH
         run: |
-          # 필요한 파일들만 임시 dist 폴더로 복사하여 압축
-          mkdir -p dist
-          cp index.html dist/
-          cp data.js dist/
-          cp -r assets dist/ 2>/dev/null || true # assets 폴더가 비어있어도 에러 안 나게 처리
-
-          # dist 폴더 내부의 파일들만 압축
-          cd dist && tar -czf ../archive_site.tar.gz .
-          cd ..
           sudo apt-get install -y sshpass
 
-          # 서버로 파일 전송 (임시 폴더로 이동)
-          cat archive_site.tar.gz | sshpass -p "${{ secrets.PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_PORT }} ${{ secrets.USERNAME }}@${{ secrets.SERVER_HOST }} 'cat > /tmp/archive_site.tar.gz'
+          # 1) 코드: 매번 덮어쓰는 파일 (공개 페이지 + 공통 이미지)
+          mkdir -p pack/site/assets pack/seed pack/cms
+          cp index.html pack/site/
+          cp -r assets/ui assets/swmc-logo.png pack/site/assets/ 2>/dev/null || true
+
+          # 2) 시드: CMS가 관리하는 데이터. 서버에 이미 있으면 건드리지 않음 (최초 1회만 채움)
+          cp data.js pack/seed/
+          mkdir -p pack/seed/assets
+          cp -r assets/posters assets/catalogs pack/seed/assets/ 2>/dev/null || true
+
+          # 3) CMS 코드 (data/, node_modules/, tmp/ 는 제외)
+          cp -r cms/server.js cms/public cms/package.json cms/package-lock.json pack/cms/
+
+          tar -czf site.tar.gz -C pack/site .
+          tar -czf seed.tar.gz -C pack/seed .
+          tar -czf cms.tar.gz -C pack/cms .
+
+          for f in site seed cms; do
+            cat $f.tar.gz | sshpass -p "${{ secrets.PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_PORT }} ${{ secrets.USERNAME }}@${{ secrets.SERVER_HOST }} "cat > /tmp/archive_$f.tar.gz"
+          done
 
       - name: Deploy on server
         uses: appleboy/ssh-action@master
@@ -36,20 +49,40 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
+          command_timeout: 10m
           script: |
-            # 배포할 대상 폴더 (archive)
-            # 만약 최상위 도메인(루트)로 접속하게 하려면 TARGET_DIR="/var/www/html" 로 변경하세요
-            TARGET_DIR="/var/www/html/archive"
+            SITE_DIR="/var/www/html/archive"
+            CMS_DIR="/var/www/archive-cms"   # 웹 루트 밖: cms/data 가 외부에 노출되지 않음
+            PW="${{ secrets.PASSWORD }}"
 
-            echo "${{ secrets.PASSWORD }}" | sudo -S mkdir -p $TARGET_DIR
-            
-            # 압축 해제 (해당 폴더에 덮어쓰기)
-            echo "${{ secrets.PASSWORD }}" | sudo -S tar -xzf /tmp/archive_site.tar.gz -C $TARGET_DIR
-            
-            # 전송된 임시 압축 파일 삭제
-            echo "${{ secrets.PASSWORD }}" | sudo -S rm -f /tmp/archive_site.tar.gz
+            echo "$PW" | sudo -S mkdir -p $SITE_DIR $CMS_DIR
+            # CMS가 data.js, assets 를 쓸 수 있도록 소유자를 배포 계정으로 맞춤 (nginx는 읽기만 하면 됨)
+            echo "$PW" | sudo -S chown -R "$(id -un):$(id -gn)" $SITE_DIR $CMS_DIR
 
-            # nginx 설정 테스트 후 재시작 (졸전 사이트와 동일하게 적용)
-            echo "${{ secrets.PASSWORD }}" | sudo -S nginx -t
-            echo "${{ secrets.PASSWORD }}" | sudo -S systemctl restart nginx
-            echo "${{ secrets.PASSWORD }}" | sudo -S systemctl status nginx --no-pager | head -5
+            # 코드는 덮어쓰기
+            tar -xzf /tmp/archive_site.tar.gz -C $SITE_DIR
+
+            # 데이터는 이미 있는 파일은 유지 (CMS에서 올린 내용 보호)
+            tar -xzf /tmp/archive_seed.tar.gz -C $SITE_DIR --skip-old-files
+
+            # CMS 코드 갱신
+            tar -xzf /tmp/archive_cms.tar.gz -C $CMS_DIR
+            rm -f /tmp/archive_site.tar.gz /tmp/archive_seed.tar.gz /tmp/archive_cms.tar.gz
+
+            # CMS 실행 (서버에 Node가 있을 때만)
+            if command -v node >/dev/null 2>&1; then
+              cd $CMS_DIR && npm ci --omit=dev
+              if command -v pm2 >/dev/null 2>&1; then
+                pm2 delete archive-cms 2>/dev/null || true
+                SITE_ROOT=$SITE_DIR SSH_PORT=${{ secrets.SERVER_PORT }} PORT=3000 \
+                  pm2 start server.js --name archive-cms --cwd $CMS_DIR
+                pm2 save
+              else
+                echo "::warning::pm2 가 없어 CMS를 재시작하지 못했습니다."
+              fi
+            else
+              echo "::warning::서버에 Node가 없어 CMS를 설치하지 못했습니다. 정적 페이지만 배포됨."
+            fi
+
+            # nginx 설정은 덮어쓰지 않고 문법만 확인 (HTTPS/Certbot 설정 보호)
+            echo "$PW" | sudo -S nginx -t

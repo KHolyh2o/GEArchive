@@ -1,0 +1,17 @@
+{
+  "name": "swmc-archive-cms",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "4.22.3",
+    "multer": "2.5.0",
+    "ssh2": "1.16.0"
+  }
+}

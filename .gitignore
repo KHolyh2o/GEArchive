@@ -2,3 +2,6 @@
 .claude/
 .vinext/
 node_modules/
+cms/node_modules/
+cms/tmp/
+cms/data/

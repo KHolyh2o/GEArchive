@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>아카이브 관리</title>
+<style>
+  :root { color-scheme: light dark; --bg:#ffffff; --card:#ffffff; --text:#111111; --muted:#667085; --line:#e4e7ec; --accent:#0a5fe0; --accent-hover:#0849b3; --accent-soft:rgba(10,95,224,.1); --on-accent:#fff; --danger:#c62828; --ok:#1b7f3b; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#000000; --card:#0d0d0d; --text:#f2f2f2; --muted:#98a2b3; --line:#262626; --accent:#2f8bff; --accent-hover:#5aa4ff; --accent-soft:rgba(47,139,255,.16); --on-accent:#fff; --danger:#ef5350; --ok:#4caf6d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 -apple-system,BlinkMacSystemFont,'Pretendard',system-ui,sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 16px; margin: 0 0 14px; }
+  .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 4px; }
+  input[type=text], input[type=password], input[type=url], input[type=date] { width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--text); font:inherit; }
+  input[type=file] { font-size:13px; color:var(--muted); max-width:100%; }
+  input[type=file]::file-selector-button { margin-right:12px; padding:8px 16px; border:0; border-radius:999px; background:var(--accent-soft); color:var(--accent); font:inherit; font-weight:600; cursor:pointer; transition:background .15s, color .15s; }
+  input[type=file]::file-selector-button:hover { background:var(--accent); color:var(--on-accent); }
+  input[type=checkbox] { accent-color:var(--accent); }
+  input:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button { font:inherit; padding:8px 14px; border-radius:8px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-weight:600; }
+  button.primary:hover:not(:disabled) { background:var(--accent-hover); border-color:var(--accent-hover); }
+  button.danger { color:var(--danger); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:560px) { .row { grid-template-columns:1fr; } }
+  .item { display:flex; gap:14px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+  .item:first-child { border-top:0; }
+  .thumb { width:48px; height:64px; border-radius:6px; background:var(--line) center/cover; flex:none; }
+  .item .info { flex:1; min-width:0; }
+  .item .info b { display:block; }
+  .item .info span { color:var(--muted); font-size:13px; }
+  .msg { margin-top:12px; font-size:14px; min-height:20px; }
+  .msg.err { color:var(--danger); } .msg.ok { color:var(--ok); }
+  .hint { color:var(--muted); font-size:12px; margin-top:4px; }
+  #login { max-width:360px; margin:12vh auto 0; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <section id="login" class="card" hidden>
+    <h1>아카이브 관리</h1>
+    <p class="hint">서버 계정(관리자 권한)으로 로그인하세요.</p>
+    <form id="loginForm">
+      <label for="u">아이디</label>
+      <input id="u" type="text" autocomplete="username" required>
+      <label for="p">비밀번호</label>
+      <input id="p" type="password" autocomplete="current-password" required>
+      <p class="msg" id="loginMsg"></p>
+      <button class="primary" style="width:100%">로그인</button>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <div class="top">
+      <h1>졸업전시 아카이브 관리</h1>
+      <div><span id="who" class="hint"></span> <button id="logout">로그아웃</button></div>
+    </div>
+
+    <div class="card">
+      <h2>등록된 전시</h2>
+      <div id="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>전시 추가 / 수정</h2>
+      <form id="form">
+        <div class="row">
+          <div><label for="year">연도</label><input id="year" type="text" inputmode="numeric" maxlength="4" placeholder="2027" required></div>
+          <div><label for="title">전시 제목</label><input id="title" type="text" maxlength="100" required></div>
+        </div>
+        <div class="row">
+          <div><label for="startDate">전시 시작일</label><input id="startDate" type="date"></div>
+          <div><label for="endDate">전시 종료일</label><input id="endDate" type="date"></div>
+        </div>
+        <label for="desc">설명</label>
+        <input id="desc" type="text" maxlength="200" placeholder="서원대학교 미디어콘텐츠학부 졸업전시">
+        <label for="link">전시 사이트 주소</label>
+        <input id="link" type="url" placeholder="https://media.seowon.ac.kr/2027/">
+        <div class="row">
+          <div>
+            <label for="poster">포스터 (PNG/JPG/WEBP)</label>
+            <input id="poster" type="file" accept="image/png,image/jpeg,image/webp">
+            <label style="display:flex;gap:6px;align-items:center;margin-top:6px"><input id="removePoster" type="checkbox"> 기존 포스터 삭제</label>
+          </div>
+          <div>
+            <label for="catalog">도록 (PDF)</label>
+            <input id="catalog" type="file" accept="application/pdf">
+          </div>
+        </div>
+        <p class="hint">같은 연도를 입력하면 기존 내용이 수정됩니다. 파일을 선택하지 않으면 기존 파일이 유지됩니다.</p>
+        <p class="msg" id="msg"></p>
+        <button class="primary" id="save">저장</button>
+        <button type="button" id="reset">새로 입력</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>학과 정보</h2>
+      <form id="deptForm">
+        <label for="d_homepage">학과 홈페이지</label><input id="d_homepage" type="url">
+        <label for="d_instagram">Instagram</label><input id="d_instagram" type="url">
+        <label for="d_address">주소</label><input id="d_address" type="text">
+        <div class="row">
+          <div><label for="d_tel">전화</label><input id="d_tel" type="text"></div>
+          <div><label for="d_next">다음 졸업전시 예정일</label><input id="d_next" type="date"></div>
+        </div>
+        <p class="msg" id="deptMsg"></p>
+        <button class="primary">학과 정보 저장</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let csrf = '';
+
+async function api(path, opts = {}) {
+  const headers = { 'X-CSRF-Token': csrf, ...(opts.headers || {}) };
+  const res = await fetch('/admin/api' + path, { credentials: 'same-origin', ...opts, headers });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && path !== '/login') showLogin();
+  if (!res.ok) throw new Error(data.error || '요청에 실패했습니다.');
+  return data;
+}
+
+function showLogin() { $('app').hidden = true; $('login').hidden = false; }
+function say(el, text, ok) { el.textContent = text; el.className = 'msg ' + (text ? (ok ? 'ok' : 'err') : ''); }
+
+async function enter(user) {
+  $('who').textContent = user;
+  $('login').hidden = true; $('app').hidden = false;
+  render(await api('/site'));
+}
+
+function render(s) {
+  const list = $('list');
+  list.textContent = '';
+  if (!s.archives.length) list.textContent = '등록된 전시가 없습니다.';
+  for (const a of s.archives) {
+    const row = document.createElement('div'); row.className = 'item';
+    const th = document.createElement('div'); th.className = 'thumb';
+    if (a.poster) th.style.backgroundImage = `url("/${encodeURI(a.poster)}?t=${Date.now()}")`;
+    const info = document.createElement('div'); info.className = 'info';
+    const b = document.createElement('b'); b.textContent = `${a.year} · ${a.title}`;
+    const sp = document.createElement('span'); sp.textContent = `${a.startDate ? a.startDate + (a.endDate ? ' ~ ' + a.endDate : '') + ' · ' : ''}포스터 ${a.poster ? '있음' : '없음'} · 도록 ${a.catalog ? '있음' : '없음'}`;
+    info.append(b, sp);
+    const edit = document.createElement('button'); edit.textContent = '수정';
+    edit.onclick = () => fill(a);
+    const del = document.createElement('button'); del.textContent = '삭제'; del.className = 'danger';
+    del.onclick = async () => {
+      if (!confirm(`${a.year} 전시를 목록에서 삭제할까요? (업로드된 파일은 남습니다)`)) return;
+      try { render(await api('/archives/' + a.year, { method: 'DELETE' })); } catch (e) { alert(e.message); }
+    };
+    row.append(th, info, edit, del);
+    list.append(row);
+  }
+  const d = s.departmentInfo;
+  $('d_homepage').value = d.homepage || ''; $('d_instagram').value = d.instagram || '';
+  $('d_address').value = d.address || ''; $('d_tel').value = d.tel || ''; $('d_next').value = /^\d{4}-\d{2}-\d{2}$/.test(d.nextExhibitionDate) ? d.nextExhibitionDate : '';
+}
+
+function fill(a) {
+  $('year').value = a.year; $('title').value = a.title; $('desc').value = a.desc || ''; $('link').value = a.link || '';
+  $('startDate').value = a.startDate || ''; $('endDate').value = a.endDate || '';
+  $('poster').value = ''; $('catalog').value = ''; $('removePoster').checked = false;
+  say($('msg'), `${a.year} 전시를 수정합니다.`, true);
+  $('form').scrollIntoView({ behavior: 'smooth' });
+}
+
+$('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  say($('loginMsg'), '확인 중...', true);
+  try {
+    const r = await api('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: $('u').value, password: $('p').value }) });
+    csrf = r.csrf; $('p').value = ''; say($('loginMsg'), '');
+    await enter(r.user);
+  } catch (err) { say($('loginMsg'), err.message); }
+};
+
+$('logout').onclick = async () => { try { await api('/logout', { method: 'POST' }); } catch {} showLogin(); };
+
+$('form').onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  for (const k of ['year', 'title', 'desc', 'link', 'startDate', 'endDate']) fd.append(k, $(k).value);
+  if ($('poster').files[0]) fd.append('poster', $('poster').files[0]);
+  if ($('catalog').files[0]) fd.append('catalog', $('catalog').files[0]);
+  if ($('removePoster').checked) fd.append('removePoster', 'true');
+  $('save').disabled = true; say($('msg'), '업로드 중...', true);
+  try {
+    render(await api('/archives', { method: 'POST', body: fd }));
+    say($('msg'), '저장되었습니다. 공개 페이지에 바로 반영됩니다.', true);
+    $('poster').value = ''; $('catalog').value = ''; $('removePoster').checked = false;
+  } catch (err) { say($('msg'), err.message); }
+  $('save').disabled = false;
+};
+$('reset').onclick = () => { $('form').reset(); say($('msg'), ''); };
+
+$('deptForm').onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    render(await api('/department', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ homepage: $('d_homepage').value, instagram: $('d_instagram').value, address: $('d_address').value, tel: $('d_tel').value, nextExhibitionDate: $('d_next').value }) }));
+    say($('deptMsg'), '저장되었습니다.', true);
+  } catch (err) { say($('deptMsg'), err.message); }
+};
+
+(async () => {
+  try { const r = await api('/me'); csrf = r.csrf; await enter(r.user); } catch { showLogin(); }
+})();
+</script>
+</body>
+</html>
