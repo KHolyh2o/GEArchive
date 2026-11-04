@@ -69,17 +69,14 @@ jobs:
             tar -xzf /tmp/archive_cms.tar.gz -C $CMS_DIR
             rm -f /tmp/archive_site.tar.gz /tmp/archive_seed.tar.gz /tmp/archive_cms.tar.gz
 
-            # CMS 실행 (서버에 Node가 있을 때만)
+            # CMS 의존성 설치 + 재시작 (systemd 서비스 archive-cms)
+            # 홈 디렉터리에 쓸 수 없는 계정이라 npm 캐시를 /tmp 로 돌린다
             if command -v node >/dev/null 2>&1; then
-              cd $CMS_DIR && npm ci --omit=dev
-              if command -v pm2 >/dev/null 2>&1; then
-                pm2 delete archive-cms 2>/dev/null || true
-                SITE_ROOT=$SITE_DIR SSH_PORT=${{ secrets.SERVER_PORT }} PORT=3000 \
-                  pm2 start server.js --name archive-cms --cwd $CMS_DIR
-                pm2 save
-              else
-                echo "::warning::pm2 가 없어 CMS를 재시작하지 못했습니다."
-              fi
+              mkdir -p /tmp/npmhome
+              cd $CMS_DIR && HOME=/tmp/npmhome npm_config_cache=/tmp/npmhome/cache npm ci --omit=dev
+              echo "$PW" | sudo -S systemctl restart archive-cms
+              sleep 2
+              systemctl is-active archive-cms
             else
               echo "::warning::서버에 Node가 없어 CMS를 설치하지 못했습니다. 정적 페이지만 배포됨."
             fi
