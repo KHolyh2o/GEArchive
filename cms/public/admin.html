@@ -42,6 +42,10 @@
   .msg { margin-top:12px; font-size:14px; min-height:20px; }
   .msg.err { color:var(--danger); } .msg.ok { color:var(--ok); }
   .hint { color:var(--muted); font-size:12px; margin-top:4px; }
+  .info { background:var(--accent-soft); border-radius:10px; padding:12px 14px; margin:12px 0 4px; font-size:13px; }
+  .info ul { margin:6px 0; padding-left:18px; }
+  .info a, .btn-link { color:var(--accent); font-weight:600; text-decoration:none; }
+  .btn-link { margin:0 8px; font-size:14px; }
   #login { max-width:360px; margin:12vh auto 0; }
   [hidden] { display:none !important; }
 </style>
@@ -50,7 +54,16 @@
 <main>
   <section id="login" class="card" hidden>
     <h1>아카이브 관리</h1>
-    <p class="hint">서버 계정(관리자 권한)으로 로그인하세요.</p>
+    <p class="hint">미디어콘텐츠학부 서버(media.seowon.ac.kr)의 <b>관리자(sudo) 권한 계정</b>만 로그인할 수 있습니다.</p>
+    <div class="info">
+      <b>로그인 안내</b>
+      <ul>
+        <li>아이디·비밀번호는 서버 접속용 계정과 같습니다.</li>
+        <li>관리자 권한이 없으면 비밀번호가 맞아도 로그인되지 않습니다.</li>
+        <li>5번 틀리면 15분간 잠깁니다.</li>
+      </ul>
+      <a href="guide.html">사용 가이드 보기 →</a>
+    </div>
     <form id="loginForm">
       <label for="u">아이디</label>
       <input id="u" type="text" autocomplete="username" required>
@@ -64,7 +77,7 @@
   <section id="app" hidden>
     <div class="top">
       <h1>졸업전시 아카이브 관리</h1>
-      <div><span id="who" class="hint"></span> <button id="logout">로그아웃</button></div>
+      <div><span id="who" class="hint"></span> <a class="btn-link" href="guide.html">사용 가이드</a> <button id="logout">로그아웃</button></div>
     </div>
 
     <div class="card">
