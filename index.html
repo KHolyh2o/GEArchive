@@ -482,15 +482,9 @@
             const minYear = Math.min(...years);
             const maxYear = Math.max(...years);
             const yearRange = minYear === maxYear ? `${minYear}` : `${minYear}—${maxYear}`;
-            const latest = archives.find((item) => Number(item.year) === maxYear);
-
-            document.getElementById('header-stats').innerHTML = `
-                <div><dt>EXHIBITIONS</dt><dd>${archives.length}</dd></div>
-                <div><dt>LATEST</dt><dd>${latest.year} · ${latest.title}</dd></div>
-                <div><dt>NEXT</dt><dd>${departmentInfo.nextExhibitionDate.replace(/-/g, '.')}</dd></div>
-            `;
-
-            const grid = document.getElementById('archive-grid');
+            const now = new Date();
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const thisYear = now.getFullYear();
 
             const formatPeriod = (start, end) => {
                 if (!start) return '';
@@ -498,6 +492,29 @@
                 if (!end || end === start) return s;
                 return `${s} – ${end.slice(0, 4) === start.slice(0, 4) ? end.slice(5).replace('-', '.') : end.replace(/-/g, '.')}`;
             };
+
+            // 올해 전시가 있으면 그것을, 없으면 올해 이전 중 가장 최근 전시를 보여줍니다.
+            const current = archives.find((item) => Number(item.year) === thisYear);
+            const latest = current
+                || archives.filter((item) => Number(item.year) < thisYear).sort((a, b) => b.year - a.year)[0]
+                || archives.find((item) => Number(item.year) === maxYear);
+
+            // 아직 끝나지 않은 가장 가까운 전시 기간이 있으면 자동으로 NEXT에 표시합니다.
+            const upcoming = archives
+                .filter((item) => item.startDate && (item.endDate || item.startDate) >= today)
+                .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+            const nextText = upcoming
+                ? formatPeriod(upcoming.startDate, upcoming.endDate)
+                : String(departmentInfo.nextExhibitionDate).replace(/-/g, '.');
+
+            document.getElementById('header-stats').innerHTML = `
+                <div><dt>EXHIBITIONS</dt><dd>${archives.length}</dd></div>
+                <div><dt>${current ? 'THIS YEAR' : 'LATEST'}</dt><dd>${latest.year} · ${latest.title}</dd></div>
+                <div><dt>NEXT</dt><dd>${nextText}</dd></div>
+            `;
+
+            const grid = document.getElementById('archive-grid');
+
 
             archives.forEach((item, index) => {
                 const article = document.createElement('article');
