@@ -122,21 +122,35 @@
     <h2>도록 PDF가 너무 클 때 (용량 줄이기)</h2>
     <p>인디자인에서 그대로 내보낸 도록은 수백 MB가 되기 쉽습니다. 2026 도록은 <b>737MB → 약 54MB</b>(171쪽, 약 25초)로 줄였고, 화면에서 읽는 데 문제가 없었습니다. 업로드 한도는 300MB지만, 방문자가 내려받는 것을 생각하면 <b>100MB 이하</b>를 권장합니다.</p>
 
-    <h3>방법 1. 터미널 명령어로 줄이기 (추천)</h3>
-    <p>무료 도구인 Ghostscript를 씁니다. 원본은 그대로 두고, 같은 폴더에 <code>도록_압축.pdf</code>를 새로 만듭니다.</p>
+    <h3>방법 1. 무료 도구(Ghostscript)로 줄이기 (추천)</h3>
+    <p>원본은 그대로 두고, 같은 폴더에 <code>도록_압축.pdf</code>를 새로 만듭니다. 처음 한 번만 설치하면 다음부터는 3번만 하면 됩니다.</p>
+
+    <h3>Windows</h3>
     <ol>
-      <li>처음 한 번만 Ghostscript를 설치합니다. (맥 터미널)
+      <li><b>설치</b> — <a href="https://ghostscript.com/releases/gsdnld.html" target="_blank" rel="noopener">ghostscript.com/releases/gsdnld.html</a>에서 Windows용(64bit)을 받아 설치합니다. 또는 명령 프롬프트에서 아래를 실행해도 됩니다.
+        <pre><code>winget install ArtifexSoftware.GhostScript</code></pre>
+      </li>
+      <li><b>명령 프롬프트 열기</b> — 도록 PDF가 있는 폴더를 연 상태에서 주소창에 <code>cmd</code>를 입력하고 Enter를 누르면 그 폴더에서 열립니다. <b>PowerShell이 아니라 명령 프롬프트(cmd)</b>로 하세요. PowerShell은 옵션을 잘못 해석할 수 있습니다.</li>
+      <li><b>실행</b> — 아래 한 줄을 그대로 붙여넣습니다. 파일 이름이 <code>도록.pdf</code>가 아니면 마지막 이름만 바꿉니다.
+<pre><code>gswin64c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
+      </li>
+      <li><code>도록_압축.pdf</code>가 만들어지면 열어서 글자와 사진이 괜찮은지 확인한 뒤, 관리 화면의 <b>도록 (PDF)</b>에 올립니다.</li>
+    </ol>
+    <p><b>"'gswin64c'은(는) 내부 또는 외부 명령...이 아닙니다"</b>라고 나오면 설치 경로가 등록되지 않은 것입니다. <code>gswin64c</code> 대신 전체 경로를 쓰세요. 버전 숫자는 <code>C:\Program Files\gs</code> 폴더 안에서 확인합니다.</p>
+<pre><code>"C:\Program Files\gs\gs10.08.0\bin\gswin64c.exe" -q -dNOPAUSE ... (나머지는 위와 동일)</code></pre>
+
+    <h3>맥</h3>
+    <ol>
+      <li><b>설치</b> (처음 한 번) — 터미널에서 실행합니다.
         <pre><code>brew install ghostscript</code></pre>
       </li>
-      <li>도록 PDF가 있는 폴더로 이동한 뒤 아래 명령어를 그대로 붙여넣어 실행합니다. 파일 이름이 <code>도록.pdf</code>가 아니면 이름만 바꿔 주세요.
+      <li><b>실행</b> — 도록 PDF가 있는 폴더에서 아래를 실행합니다.
 <pre><code>gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 \
   -dPDFSETTINGS=/ebook -dColorConversionStrategy=/LeaveColorUnchanged \
   -dDetectDuplicateImages=true -sOutputFile=도록_압축.pdf 도록.pdf</code></pre>
       </li>
-      <li><code>도록_압축.pdf</code>가 만들어집니다. 열어서 글자와 사진이 괜찮은지 확인합니다.</li>
-      <li>관리 화면의 <b>도록 (PDF)</b>에 이 압축본을 올립니다.</li>
+      <li><code>도록_압축.pdf</code>를 열어 확인한 뒤 관리 화면에 올립니다.</li>
     </ol>
-    <p>Windows는 Ghostscript를 설치한 뒤 <code>gs</code> 대신 <code>gswin64c</code>를 쓰면 됩니다.</p>
 
     <h3>방법 2. 인디자인에서 처음부터 작게 내보내기</h3>
     <p>내보내기 → Adobe PDF에서 프리셋을 <b>최소 파일 크기</b>로 고르면 비슷하게 줄어듭니다.</p>
