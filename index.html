@@ -537,9 +537,9 @@
                             <p class="card-desc">${item.desc}</p>
                             ${item.startDate ? `<p class="card-desc">${formatPeriod(item.startDate, item.endDate)}</p>` : ''}
                         </a>
-                        <a href="${item.catalog}" class="btn-download" target="_blank" rel="noopener noreferrer">
+                        ${item.catalog ? `<a href="${item.catalog}" class="btn-download" target="_blank" rel="noopener noreferrer">
                             도록 보기
-                        </a>
+                        </a>` : ''}
                     </div>
                 `;
 

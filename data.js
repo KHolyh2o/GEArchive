@@ -24,7 +24,7 @@ const archives = [
         "desc": "서원대학교 미디어콘텐츠학부 졸업전시",
         "link": "https://media.seowon.ac.kr/2025/",
         "poster": "",
-        "catalog": "assets/catalogs/2025_catalog.pdf",
+        "catalog": "",
         "placeholderGradient": "linear-gradient(135deg, #4FACFE, #00F2FE)"
     },
     {
@@ -33,7 +33,7 @@ const archives = [
         "desc": "서원대학교 미디어콘텐츠학부 졸업전시",
         "link": "https://media.seowon.ac.kr/2024/",
         "poster": "",
-        "catalog": "assets/catalogs/2024_catalog.pdf",
+        "catalog": "",
         "placeholderGradient": "linear-gradient(135deg, #43E97B, #38F9D7)"
     },
     {
@@ -42,7 +42,7 @@ const archives = [
         "desc": "서원대학교 미디어콘텐츠학부 졸업전시",
         "link": "https://media.seowon.ac.kr/2023/",
         "poster": "",
-        "catalog": "assets/catalogs/2023_catalog.pdf",
+        "catalog": "",
         "placeholderGradient": "linear-gradient(135deg, #FA709A, #FEE140)"
     }
 ];
