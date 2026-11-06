@@ -544,6 +544,13 @@
                 `;
 
                 grid.appendChild(article);
+
+                // 서버에 도록 파일이 실제로 없으면(404 등) 버튼을 숨김
+                if (item.catalog) {
+                    fetch(item.catalog, { method: 'HEAD' })
+                        .then(res => { if (!res.ok) throw new Error('missing'); })
+                        .catch(() => article.querySelector('.btn-download')?.remove());
+                }
             });
 
             document.getElementById('footer-copyright').textContent = `© ${yearRange} 서원대학교 미디어콘텐츠학부. All rights reserved.`;
