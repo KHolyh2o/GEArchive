@@ -210,6 +210,25 @@
             max-width: 100%;
         }
 
+        .card-label {
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-align: center;
+            margin-top: 0.8rem;
+        }
+
+        .card-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-item .card {
+            flex: 1;
+        }
+
         .card-overlay {
             position: absolute;
             inset: 0;
@@ -543,7 +562,14 @@
                     </div>
                 `;
 
-                grid.appendChild(article);
+                // 카드 아래에 연도 텍스트만 따로 표시
+                const cardItem = document.createElement('div');
+                cardItem.className = 'card-item';
+                const label = document.createElement('div');
+                label.className = 'card-label';
+                label.textContent = item.year;
+                cardItem.append(article, label);
+                grid.appendChild(cardItem);
 
                 // 서버에 도록 파일이 실제로 없으면(404 등) 버튼을 숨김
                 if (item.catalog) {
