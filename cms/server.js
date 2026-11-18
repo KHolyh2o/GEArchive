@@ -63,10 +63,33 @@ function saveSite(site, regenerate = true) {
     const js =
       '// 이 파일은 CMS(/admin)가 자동으로 생성합니다. 직접 수정하지 마세요.\n' +
       `const departmentInfo = ${JSON.stringify(site.departmentInfo, null, 4)};\n\n` +
-      `const archives = ${JSON.stringify(site.archives, null, 4)};\n`;
+      `const archives = ${JSON.stringify(site.archives.map(({ catalogLock, ...pub }) => pub), null, 4)};\n`;
     writeAtomic(path.join(SITE_ROOT, 'data.js'), js);
   }
 }
+
+// ---------- 도록 잠금 (6자리 비밀번호 + 설정자 정보) ----------
+const isPin = (v) => /^\d{6}$/.test(v);
+function hashPin(pin, salt = crypto.randomBytes(16).toString('hex')) {
+  return { salt, hash: crypto.scryptSync(pin, salt, 32).toString('hex') };
+}
+function checkPin(lock, pin) {
+  if (!lock || !isPin(pin)) return false;
+  const a = Buffer.from(hashPin(pin, lock.salt).hash, 'hex');
+  return crypto.timingSafeEqual(a, Buffer.from(lock.hash, 'hex'));
+}
+// 관리 화면으로 보낼 때는 해시를 빼고 설정자 정보만 남깁니다.
+function adminView(site) {
+  return {
+    ...site,
+    archives: site.archives.map(({ catalogLock, ...a }) => ({
+      ...a,
+      catalogOwner: catalogLock ? { contact: catalogLock.contact, name: catalogLock.name, setAt: catalogLock.setAt } : null,
+    })),
+  };
+}
+const lockedMsg = (lock) =>
+  `비밀번호가 틀렸습니다. 이 도록은 ${lock.contact} ${lock.name} 님이 설정했으니 해당 분께 연락해 주세요.`;
 
 // ---------- 인증 ----------
 const sessions = new Map(); // sid -> { user, csrf, expires }
@@ -224,7 +247,7 @@ api.post('/logout', requireAuth, (req, res) => {
 
 api.get('/me', requireAuth, (req, res) => res.json({ user: req.session.user, csrf: req.session.csrf }));
 
-api.get('/site', requireAuth, (_req, res) => res.json({ ...loadSite(), publicBase: PUBLIC_BASE }));
+api.get('/site', requireAuth, (_req, res) => res.json({ ...adminView(loadSite()), publicBase: PUBLIC_BASE }));
 
 api.put('/department', requireAuth, express.json({ limit: '10kb' }), (req, res) => {
   const site = loadSite();
@@ -245,7 +268,7 @@ api.put('/department', requireAuth, express.json({ limit: '10kb' }), (req, res) 
   }
   site.departmentInfo = info;
   saveSite(site);
-  res.json(site);
+  res.json(adminView(site));
 });
 
 // 연도 추가/수정 (같은 연도가 있으면 수정)
@@ -300,9 +323,25 @@ api.post('/archives', requireAuth, (req, res) => {
         entry.poster = '';
       }
 
+      if (prev?.catalogLock) entry.catalogLock = prev.catalogLock;
       const catalog = req.files?.catalog?.[0];
       if (catalog) {
         if (sniff(catalog.path) !== 'pdf') throw new Error('도록은 PDF 파일만 가능합니다.');
+        const pin = clean(b.catalogPin, 6);
+        const contact = clean(b.catalogContact, 40);
+        const name = clean(b.catalogName, 20);
+        if (prev?.catalogLock) {
+          // 이미 잠긴 도록을 교체하려면 기존 비밀번호가 필요합니다.
+          const key = `catalog:${year}`;
+          if (tooMany(key, 5)) throw new Error('시도 횟수가 많습니다. 15분 후 다시 시도해 주세요.');
+          if (!checkPin(prev.catalogLock, clean(b.currentPin, 6))) {
+            recordFailure(key);
+            throw new Error(lockedMsg(prev.catalogLock));
+          }
+        }
+        if (!isPin(pin)) throw new Error('도록 비밀번호는 숫자 6자리여야 합니다.');
+        if (!contact || !name) throw new Error('도록 비밀번호 설정자의 직책(또는 학번)과 이름을 입력해 주세요.');
+        entry.catalogLock = { ...hashPin(pin), contact, name, setAt: new Date().toISOString() };
         const rel = `assets/catalogs/${year}_catalog.pdf`;
         fs.renameSync(catalog.path, path.join(SITE_ROOT, rel));
         entry.catalog = rel;
@@ -312,7 +351,7 @@ api.post('/archives', requireAuth, (req, res) => {
       else site.archives.push(entry);
       saveSite(site);
       discard();
-      res.json(site);
+      res.json(adminView(site));
     } catch (e) {
       discard();
       res.status(400).json({ error: e.message });
@@ -320,12 +359,41 @@ api.post('/archives', requireAuth, (req, res) => {
   });
 });
 
-// 목록에서만 삭제합니다(업로드된 파일은 남겨 둡니다).
-api.delete('/archives/:year', requireAuth, (req, res) => {
+// 도록 내리기: 설정한 6자리 비밀번호가 맞아야 합니다. (잠금이 없는 예전 도록은 비밀번호 없이 가능)
+api.delete('/archives/:year/catalog', requireAuth, express.json({ limit: '1kb' }), (req, res) => {
   const site = loadSite();
-  site.archives = site.archives.filter((a) => a.year !== req.params.year);
+  const a = site.archives.find((x) => x.year === req.params.year);
+  if (!a || !a.catalog) return res.status(404).json({ error: '내릴 도록이 없습니다.' });
+  if (a.catalogLock) {
+    const key = `catalog:${a.year}`;
+    if (tooMany(key, 5)) return res.status(429).json({ error: '시도 횟수가 많습니다. 15분 후 다시 시도해 주세요.' });
+    if (!checkPin(a.catalogLock, clean(req.body?.pin, 6))) {
+      recordFailure(key);
+      return res.status(403).json({ error: lockedMsg(a.catalogLock) });
+    }
+  }
+  fs.rmSync(path.join(SITE_ROOT, a.catalog), { force: true });
+  a.catalog = '';
+  delete a.catalogLock;
   saveSite(site);
-  res.json(site);
+  res.json(adminView(site));
+});
+
+// 목록에서만 삭제합니다(업로드된 파일은 남겨 둡니다). 잠긴 도록이 있으면 비밀번호가 필요합니다.
+api.delete('/archives/:year', requireAuth, express.json({ limit: '1kb' }), (req, res) => {
+  const site = loadSite();
+  const a = site.archives.find((x) => x.year === req.params.year);
+  if (a?.catalogLock) {
+    const key = `catalog:${a.year}`;
+    if (tooMany(key, 5)) return res.status(429).json({ error: '시도 횟수가 많습니다. 15분 후 다시 시도해 주세요.' });
+    if (!checkPin(a.catalogLock, clean(req.body?.pin, 6))) {
+      recordFailure(key);
+      return res.status(403).json({ error: lockedMsg(a.catalogLock) });
+    }
+  }
+  site.archives = site.archives.filter((x) => x.year !== req.params.year);
+  saveSite(site);
+  res.json(adminView(site));
 });
 
 app.use('/admin/api', api);

@@ -111,6 +111,17 @@
             <input id="catalog" type="file" accept="application/pdf">
           </div>
         </div>
+        <div id="lockBox" hidden>
+          <p class="hint" style="margin-top:12px">도록을 올릴 때는 나중에 내릴 때 쓸 <b>숫자 6자리 비밀번호</b>와 설정자 정보를 꼭 입력해 주세요. 다른 사람이 내리려다 비밀번호가 틀리면 이 정보가 보여서 연락할 수 있습니다.</p>
+          <div class="row">
+            <div><label for="catalogContact">직책 또는 학번</label><input id="catalogContact" type="text" maxlength="40" placeholder="예: 학과장 / 20201234"></div>
+            <div><label for="catalogName">이름</label><input id="catalogName" type="text" maxlength="20"></div>
+          </div>
+          <div class="row">
+            <div><label for="catalogPin">도록 비밀번호 (숫자 6자리)</label><input id="catalogPin" type="password" inputmode="numeric" maxlength="6" pattern="\d{6}" autocomplete="off"></div>
+            <div id="curPinBox" hidden><label for="currentPin">기존 도록 비밀번호 (교체 시 필요)</label><input id="currentPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>
+          </div>
+        </div>
         <p class="hint">같은 연도를 입력하면 기존 내용이 수정됩니다. 파일을 선택하지 않으면 기존 파일이 유지됩니다.</p>
         <p class="msg" id="msg"></p>
         <button class="primary" id="save">저장</button>
@@ -139,6 +150,13 @@
 const $ = (id) => document.getElementById(id);
 let csrf = '';
 let publicBase = '/';
+let editing = null; // 수정 중인 전시
+function updateLockBox() {
+  const has = !!$('catalog').files[0];
+  $('lockBox').hidden = !has;
+  $('curPinBox').hidden = !(has && editing && editing.catalogOwner);
+}
+$('catalog').onchange = updateLockBox;
 
 async function api(path, opts = {}) {
   const headers = { 'X-CSRF-Token': csrf, ...(opts.headers || {}) };
@@ -171,14 +189,29 @@ function render(s) {
     const b = document.createElement('b'); b.textContent = `${a.year} · ${a.title}`;
     const sp = document.createElement('span'); sp.textContent = `${a.startDate ? a.startDate + (a.endDate ? ' ~ ' + a.endDate : '') + ' · ' : ''}포스터 ${a.poster ? '있음' : '없음'} · 도록 ${a.catalog ? '있음' : '없음'}`;
     info.append(b, sp);
+    if (a.catalogOwner) { const o = document.createElement('span'); o.textContent = `도록 비밀번호 설정: ${a.catalogOwner.contact} ${a.catalogOwner.name}`; info.append(o); }
     const edit = document.createElement('button'); edit.textContent = '수정';
     edit.onclick = () => fill(a);
     const del = document.createElement('button'); del.textContent = '삭제'; del.className = 'danger';
     del.onclick = async () => {
       if (!confirm(`${a.year} 전시를 목록에서 삭제할까요? (업로드된 파일은 남습니다)`)) return;
-      try { render(await api('/archives/' + a.year, { method: 'DELETE' })); } catch (e) { alert(e.message); }
+      let pin = '';
+      if (a.catalogOwner) { pin = prompt(`도록이 잠겨 있습니다. 6자리 비밀번호를 입력하세요.\n(설정자: ${a.catalogOwner.contact} ${a.catalogOwner.name})`) || ''; if (!pin) return; }
+      try { render(await api('/archives/' + a.year, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) })); } catch (e) { alert(e.message); }
     };
-    row.append(th, info, edit, del);
+    if (a.catalog) {
+      const rm = document.createElement('button'); rm.textContent = '도록 내리기'; rm.className = 'danger';
+      rm.onclick = async () => {
+        let pin = '';
+        if (a.catalogOwner) {
+          pin = prompt(`${a.year} 도록을 내리려면 6자리 비밀번호를 입력하세요.\n(설정자: ${a.catalogOwner.contact} ${a.catalogOwner.name})`) || '';
+          if (!pin) return;
+        } else if (!confirm(`${a.year} 도록을 내릴까요? PDF 파일이 서버에서 삭제됩니다.`)) return;
+        try { render(await api('/archives/' + a.year + '/catalog', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) })); }
+        catch (e) { alert(e.message); }
+      };
+      row.append(th, info, edit, rm, del);
+    } else row.append(th, info, edit, del);
     list.append(row);
   }
   const d = s.departmentInfo;
@@ -190,6 +223,7 @@ function fill(a) {
   $('year').value = a.year; $('title').value = a.title; $('desc').value = a.desc || ''; $('link').value = a.link || '';
   $('startDate').value = a.startDate || ''; $('endDate').value = a.endDate || '';
   $('poster').value = ''; $('catalog').value = ''; $('removePoster').checked = false;
+  editing = a; updateLockBox();
   say($('msg'), `${a.year} 전시를 수정합니다.`, true);
   $('form').scrollIntoView({ behavior: 'smooth' });
 }
@@ -211,17 +245,22 @@ $('form').onsubmit = async (e) => {
   const fd = new FormData();
   for (const k of ['year', 'title', 'desc', 'link', 'startDate', 'endDate']) fd.append(k, $(k).value);
   if ($('poster').files[0]) fd.append('poster', $('poster').files[0]);
-  if ($('catalog').files[0]) fd.append('catalog', $('catalog').files[0]);
+  if ($('catalog').files[0]) {
+    fd.append('catalog', $('catalog').files[0]);
+    for (const k of ['catalogContact', 'catalogName', 'catalogPin', 'currentPin']) fd.append(k, $(k).value);
+  }
   if ($('removePoster').checked) fd.append('removePoster', 'true');
   $('save').disabled = true; say($('msg'), '업로드 중...', true);
   try {
     render(await api('/archives', { method: 'POST', body: fd }));
     say($('msg'), '저장되었습니다. 공개 페이지에 바로 반영됩니다.', true);
     $('poster').value = ''; $('catalog').value = ''; $('removePoster').checked = false;
+    for (const k of ['catalogPin', 'currentPin']) $(k).value = '';
+    editing = null; updateLockBox();
   } catch (err) { say($('msg'), err.message); }
   $('save').disabled = false;
 };
-$('reset').onclick = () => { $('form').reset(); say($('msg'), ''); };
+$('reset').onclick = () => { $('form').reset(); editing = null; updateLockBox(); say($('msg'), ''); };
 
 $('deptForm').onsubmit = async (e) => {
   e.preventDefault();
