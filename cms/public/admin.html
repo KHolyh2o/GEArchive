@@ -47,6 +47,10 @@
   .info a, .btn-link { color:var(--accent); font-weight:600; text-decoration:none; }
   .btn-link { margin:0 8px; font-size:14px; }
   #login { max-width:360px; margin:12vh auto 0; }
+  .help { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-left:6px; border-radius:50%; border:1px solid var(--muted); color:var(--muted); font-size:11px; font-weight:700; line-height:1; text-decoration:none; position:relative; vertical-align:middle; }
+  .help:hover, .help:focus-visible { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .help::after { content:attr(data-tip); position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); width:max-content; max-width:240px; padding:8px 10px; border-radius:8px; background:var(--text); color:var(--bg); font-size:12px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; opacity:0; pointer-events:none; transition:opacity .12s; z-index:10; }
+  .help:hover::after, .help:focus-visible::after { opacity:1; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -147,6 +151,34 @@
 </main>
 
 <script>
+// 입력칸 옆 ? 아이콘: 마우스를 올리면 짧은 설명, 클릭하면 가이드의 해당 부분이 새 탭으로 열립니다.
+const HELP = {
+  year: ['전시 연도(20XX, 4자리)입니다. 이미 있는 연도를 입력하면 새로 추가되지 않고 그 전시가 수정됩니다.', 'add'],
+  title: ['전시 제목입니다. 연도와 함께 꼭 입력해야 합니다.', 'add'],
+  startDate: ['전시 시작일입니다. 하루만 하는 전시는 시작일만 넣어도 됩니다.', 'add'],
+  endDate: ['전시 종료일입니다. 시작일보다 빠를 수 없습니다.', 'add'],
+  desc: ['카드에 표시되는 짧은 설명입니다. 비우면 기본 문구가 들어갑니다.', 'add'],
+  link: ['그 해 전시 사이트 주소입니다. 아카이브에서 카드를 누르면 이 주소로 이동합니다.', 'add'],
+  poster: ['PNG/JPG/WEBP 이미지, 세로형 권장. 고르지 않으면 기존 포스터가 유지됩니다.', 'files'],
+  catalog: ['PDF만 가능, 최대 300MB. 올릴 때 6자리 비밀번호와 설정자 정보를 입력해야 합니다.', 'catalog'],
+  catalogContact: ['직책 또는 학번입니다. 다른 사람이 도록을 내리려 할 때 연락할 수 있도록 표시됩니다.', 'catalog'],
+  catalogName: ['비밀번호를 설정한 사람의 이름입니다. 직책/학번과 함께 표시됩니다.', 'catalog'],
+  catalogPin: ['도록을 내릴 때 필요한 숫자 6자리 비밀번호입니다. 설정자만 알도록 관리하세요.', 'catalog'],
+  currentPin: ['이미 잠긴 도록을 교체하려면 기존에 설정한 6자리 비밀번호가 필요합니다.', 'catalog'],
+  d_homepage: ['학과 홈페이지 주소입니다. http(s)로 시작해야 합니다.', 'dept'],
+  d_instagram: ['학과 Instagram 주소입니다. http(s)로 시작해야 합니다.', 'dept'],
+  d_address: ['학과 주소입니다.', 'dept'],
+  d_tel: ['학과 전화번호입니다.', 'dept'],
+  d_next: ['다음 졸업전시 예정일입니다. 예정된 전시 날짜가 없을 때 아카이브의 NEXT에 표시됩니다.', 'dept'],
+};
+for (const [id, [tip, anchor]] of Object.entries(HELP)) {
+  const label = document.querySelector(`label[for="${id}"]`);
+  if (!label) continue;
+  const a = document.createElement('a');
+  a.className = 'help'; a.textContent = '?'; a.href = `guide.html#${anchor}`; a.target = '_blank'; a.rel = 'noopener';
+  a.dataset.tip = tip + ' (클릭하면 가이드)'; a.setAttribute('aria-label', tip);
+  label.append(a);
+}
 const $ = (id) => document.getElementById(id);
 let csrf = '';
 let publicBase = '/';

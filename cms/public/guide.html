@@ -35,6 +35,7 @@
   .note b { color:var(--warn); }
   pre { background:var(--accent-soft); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:13px; line-height:1.6; margin:8px 0; }
   pre code { background:none; padding:0; color:var(--text); }
+  section:target { outline:2px solid var(--accent); }
   .btn { display:inline-block; padding:8px 14px; border-radius:8px; border:1px solid var(--line); color:var(--text); text-decoration:none; font-size:14px; }
 </style>
 </head>
@@ -51,6 +52,7 @@
     <a href="#login">로그인</a>
     <a href="#add">전시 추가</a>
     <a href="#edit">수정·삭제</a>
+    <a href="#catalog">도록 비밀번호·내리기</a>
     <a href="#files">파일 규격</a>
     <a href="#shrink">도록 용량 줄이기</a>
     <a href="#dept">학과 정보</a>
@@ -106,6 +108,24 @@
       <li>목록의 <b>삭제</b>를 누르면 아카이브 페이지에서 그 전시가 사라집니다.</li>
       <li>업로드했던 포스터·도록 파일은 서버에 남아 있습니다. 실수로 지웠다면 같은 연도로 다시 추가하세요.</li>
     </ul>
+  </section>
+
+  <section id="catalog">
+    <h2>도록 비밀번호와 내리기</h2>
+    <h3>올릴 때</h3>
+    <ul>
+      <li>도록 PDF를 선택하면 <b>직책 또는 학번</b>, <b>이름</b>, <b>숫자 6자리 비밀번호</b> 입력칸이 나타납니다. 모두 꼭 입력해야 합니다.</li>
+      <li>이 비밀번호는 나중에 도록을 내릴 때 필요합니다. 설정한 사람이 누구인지는 관리 화면 목록에 표시됩니다.</li>
+      <li>이미 잠긴 도록을 새 PDF로 교체할 때는 <b>기존 도록 비밀번호</b>도 입력해야 합니다.</li>
+    </ul>
+    <h3>내릴 때</h3>
+    <ul>
+      <li>목록의 <b>도록 내리기</b>를 누르고 6자리 비밀번호를 입력합니다. 맞으면 서버의 PDF가 삭제되고 "도록 보기" 버튼이 사라집니다. 되돌릴 수 없습니다.</li>
+      <li>비밀번호를 모르면 목록에 적힌 설정자에게 연락하세요. 틀렸을 때도 설정자 정보가 안내됩니다.</li>
+      <li>5번 틀리면 15분간 잠깁니다.</li>
+      <li>잠긴 도록이 있는 전시를 목록에서 삭제할 때도 비밀번호가 필요합니다.</li>
+    </ul>
+    <div class="note"><b>참고</b> 비밀번호가 설정되지 않은 예전 도록은 확인창만 거치면 바로 내릴 수 있습니다.</div>
   </section>
 
   <section id="files">
